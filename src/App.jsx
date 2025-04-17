@@ -72,9 +72,9 @@ function App() {
                 path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    {/* <CrisisDashboard /> */}
+                    <CrisisDashboard /> 
                     
-                    <ResourceRequestForm/>
+                    {/* <ResourceRequestForm/> */}
                   </ProtectedRoute>
                 }
               />
