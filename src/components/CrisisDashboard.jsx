@@ -18,8 +18,12 @@ const UserLocationMarker = ({ onLocationFound }) => {
   const map = useMap();
   const [position, setPosition] = useState(null);
   const [error, setError] = useState(null);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
+    // Set mounted flag
+    isMountedRef.current = true;
+
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by your browser');
       return;
@@ -28,14 +32,24 @@ const UserLocationMarker = ({ onLocationFound }) => {
     const getUserLocation = () => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          // Check if component is still mounted
+          if (!isMountedRef.current) return;
+          
           const { latitude, longitude } = position.coords;
           setPosition([latitude, longitude]);
           onLocationFound({ latitude, longitude });
           
-          // Center map on user location
-          map.setView([latitude, longitude], 13);
+          // Center map on user location - Check if map still exists and has methods
+          if (map && map._loaded && isMountedRef.current) {
+            try {
+              map.setView([latitude, longitude], 13);
+            } catch (e) {
+              console.error('Error setting map view:', e);
+            }
+          }
         },
         (error) => {
+          if (!isMountedRef.current) return;
           console.error('Error getting location:', error);
           setError('Unable to retrieve your location');
         },
@@ -44,6 +58,11 @@ const UserLocationMarker = ({ onLocationFound }) => {
     };
 
     getUserLocation();
+    
+    // Cleanup function
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [map, onLocationFound]);
 
   if (error) return null;
