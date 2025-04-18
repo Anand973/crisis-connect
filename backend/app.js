@@ -2,24 +2,29 @@
 const express = require('express');
 const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
-const resourceRoutes = require('./routes/resourceRoutes');
+const UserResources=require('./routes/resourceRoute')
+// Import other routes as needed
 
 // Create Express app
 const app = express();
 
+// CORS configuration
+const corsOptions = {
+  origin: 'http://localhost:3000', // Allow requests from the React frontend
+  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/users', userRoutes);
-app.use('/api/resources', resourceRoutes);
-
-// Base route
-app.get('/', (req, res) => {
-  res.send('API is running...');
-});
+app.use('/api/resources', UserResources);
+// Add other routes as needed
 
 // Error handler middleware
 app.use((err, req, res, next) => {

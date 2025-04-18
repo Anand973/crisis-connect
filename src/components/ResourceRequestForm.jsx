@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AlertCircle, MapPin } from 'lucide-react';
 import axios from 'axios';
 import { useUser } from '../context/UserContext';
+import CrisisChatbot from './CrisisChatbot';
 
 const ResourceRequestForm = () => {
   const { user } = useUser();
@@ -69,19 +70,22 @@ const ResourceRequestForm = () => {
       return;
     }
 
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-       'http://localhost:5000/api/resources/',
-        formData,
-       
-    {
-      headers: {
-        Authorization: `Bearer ${token}`, // Common format for Bearer tokens
-        'Content-Type': 'application/json'
-      }
-    }
+    // Structure payload to match backend expectations
+    const payload = {
+      resources: {
+        medical: formData.needsMedical,
+        food: formData.needsFood,
+        shelter: formData.needsShelter
+      },
+      longitude: formData.longitude,
+      latitude: formData.latitude
+    };
 
+    try {
+      // Simple POST request without authentication
+      const response = await axios.post(
+        'http://localhost:5000/api/resources',
+        payload
       );
 
       setSuccess('Resource request submitted successfully!');
@@ -97,10 +101,17 @@ const ResourceRequestForm = () => {
     } catch (err) {
       console.error('Error submitting resource request:', err);
       
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message);
+      if (err.response) {
+        const { status, data } = err.response;
+        if (status === 400 && data.message) {
+          setError(data.message);
+        } else {
+          setError('Failed to submit request. Please try again.');
+        }
+      } else if (err.request) {
+        setError('No response from server. Please check your connection.');
       } else {
-        setError('Failed to submit request. Please try again.');
+        setError('An unexpected error occurred. Please try again.');
       }
     } finally {
       setIsLoading(false);
@@ -212,6 +223,7 @@ const ResourceRequestForm = () => {
           </button>
         </form>
       </div>
+      <CrisisChatbot />
     </div>
   );
 };

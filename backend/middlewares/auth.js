@@ -1,54 +1,44 @@
-// backend/middlewares/auth.js
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const protect = async (req, res, next) => {
   let token;
 
-  // Check if token exists in headers
-  console.log(req.headers.authorization);
-  console.log(req.headers.authorization.startsWith('Bearer'));
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      // Get token from header
-      console.log(
-        "this is the if condition"
-      )
-      token = req.headers.authorization.split(' ')[1];
-
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-console.log(decoded);
-      // Get user from token
-      req.user = await User.findById(decoded.id).select('-password');
-console.log(req.user);
-      next();
-    } catch (error) {
-      console.error('Authentication error:', error);
-      res.status(401).json({ message: 'Not authorized, token failed' });
-    }
+  // Check for Authorization header with Bearer token
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Not authorized, no token provided' });
   }
 
-  if (!token) {
-    res.status(401).json({ message: 'Not authorized, no token' });
-  }
-};
+  try {
+    // Extract token from header
+    token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'Not authorized, invalid token format' });
+    }
 
-// Middleware for role-based authorization
-const authorize = (...roles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({ message: 'Not authorized' });
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Fetch user from database, excluding password
+    const user = await User.findById(decoded.userId).select('-password');
+    if (!user) {
+      return res.status(401).json({ message: 'Not authorized, user not found' });
     }
-    
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        message: `User role ${req.user.role} is not authorized to access this resource` 
-      });
-    }
-    
+
+    // Attach user to request
+    req.user = user;
     next();
-  };
+  } catch (error) {
+    console.error('Authentication error:', error.message);
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ message: 'Not authorized, invalid token' });
+    }
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Not authorized, token expired' });
+    }
+    res.status(401).json({ message: 'Not authorized, token verification failed' });
+  }
 };
 
-module.exports = { protect, authorize };
+module.exports = { protect };

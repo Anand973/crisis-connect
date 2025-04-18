@@ -29,7 +29,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "server": "nodemon backend/server.js"
   },
   "eslintConfig": {
     "extends": [
@@ -51,6 +52,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
+    "nodemon": "^3.1.9",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.1"
   }

@@ -12,7 +12,7 @@ import ProtectedRoute from "./components/ProtectedRoute"
 import { UserProvider } from "./context/UserContext"
 import NewsFeed from "./components/NewsFeed"
 import "./App.css"
-import ResourceRequestForm from "./components/Neededhelp"
+import ResourceRequestForm from "./components/ResourceRequestForm"
 
 function App() {
   return (
@@ -35,11 +35,9 @@ function App() {
                   Dashboard
                 </Link>
                 <Link to="/profile" className="text-sm font-medium hover:text-primary">
-                  Profile
+                Resource Request Form
                 </Link>
-                <a href="#about" className="text-sm font-medium hover:text-primary">
-                  About
-                </a>
+               
               </nav>
               <div className="flex items-center gap-4">
                 <Link to="/login">
@@ -57,6 +55,16 @@ function App() {
           </header>
           <main className="flex-1">
             <Routes>
+            <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <CrisisDashboard /> 
+                    
+                   
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<UserRegistration />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -64,20 +72,11 @@ function App() {
                 path="/profile"
                 element={
                   <ProtectedRoute>
-                    <UserProfile />
+                   <ResourceRequestForm/> 
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <CrisisDashboard /> 
-                    
-                    {/* <ResourceRequestForm/> */}
-                  </ProtectedRoute>
-                }
-              />
+             
               <Route path="/" element={
                 <section className="relative py-12 md:py-16 lg:py-20">
                   <div className="container px-4 md:px-6">

@@ -43,9 +43,6 @@ const Login = () => {
         isVerified: response.data.isVerified,
         token: response.data.token
       };
-
-      // Save token in localStorage for future requests
-      localStorage.setItem('token', response.data.token);
       
       // Login the user using context
       login(userData);
